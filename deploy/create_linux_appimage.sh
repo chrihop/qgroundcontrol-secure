@@ -42,29 +42,32 @@ TMPDIR=`mktemp -d`
 APPDIR=${TMPDIR}/$APP".AppDir"
 mkdir -p ${APPDIR}
 
+echo "Temporary directory: ${TMPDIR}"
+
 cd ${TMPDIR}
-wget -c --quiet http://ftp.us.debian.org/debian/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.2%2bdfsg1-6_amd64.deb
+wget -c --quiet "http://archive.ubuntu.com/ubuntu/pool/universe/libs/libsdl2/libsdl2-2.0-0_2.0.10+dfsg1-3_amd64.deb"
 
 cd ${APPDIR}
 find ../ -name *.deb -exec dpkg -x {} . \;
 
 # copy libdirectfb-1.2.so.9
 cd ${TMPDIR}
-wget -c --quiet http://ftp.us.debian.org/debian/pool/main/d/directfb/libdirectfb-1.2-9_1.2.10.0-5.1_amd64.deb
+wget -c --quiet "http://archive.ubuntu.com/ubuntu/pool/universe/d/directfb/libdirectfb-1.7-7_1.7.7-9build1_amd64.deb"
 mkdir libdirectfb
-dpkg -x libdirectfb-1.2-9_1.2.10.0-5.1_amd64.deb libdirectfb
-cp -L libdirectfb/usr/lib/x86_64-linux-gnu/libdirectfb-1.2.so.9 ${APPDIR}/usr/lib/x86_64-linux-gnu/
-cp -L libdirectfb/usr/lib/x86_64-linux-gnu/libfusion-1.2.so.9 ${APPDIR}/usr/lib/x86_64-linux-gnu/
-cp -L libdirectfb/usr/lib/x86_64-linux-gnu/libdirect-1.2.so.9 ${APPDIR}/usr/lib/x86_64-linux-gnu/
+dpkg -x libdirectfb-1.7-7_1.7.7-9build1_amd64.deb libdirectfb
+cp -L libdirectfb/usr/lib/x86_64-linux-gnu/libdirectfb-1.7.so.7 ${APPDIR}/usr/lib/x86_64-linux-gnu/
+cp -L libdirectfb/usr/lib/x86_64-linux-gnu/libfusion-1.7.so.7 ${APPDIR}/usr/lib/x86_64-linux-gnu/
+cp -L libdirectfb/usr/lib/x86_64-linux-gnu/libdirect-1.7.so.7 ${APPDIR}/usr/lib/x86_64-linux-gnu/
 
 # copy QGroundControl release into appimage
-rsync -av --exclude=*.cpp --exclude=*.h --exclude=*.o --exclude="CMake*" --exclude="*.cmake" ${QGC_RELEASE_DIR}/* ${APPDIR}/
+rsync -av --exclude=*.cpp --exclude=*.h --exclude=*.o --exclude="CMake*" --exclude="*.cmake" --exclude="_deps" ${QGC_RELEASE_DIR}/* ${APPDIR}/
 rm -rf ${APPDIR}/package
 cp ${QGC_CUSTOM_LINUX_START_SH} ${APPDIR}/AppRun
 
 # copy icon
 cp ${QGC_CUSTOM_APP_ICON} ${APPDIR}/
 
+cd ${APPDIR}
 cat > ./QGroundControl.desktop <<\EOF
 [Desktop Entry]
 Type=Application
@@ -86,7 +89,9 @@ cd ${TMPDIR}
 wget -c --quiet "https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage"
 chmod a+x ./appimagetool-x86_64.AppImage
 
-./appimagetool-x86_64.AppImage ./$APP.AppDir/ ${TMPDIR}/$APP".AppImage"
+# Fix for running inside the docker
+./appimagetool-x86_64.AppImage --appimage-extract
+./squashfs-root/AppRun ./$APP.AppDir/ ${TMPDIR}/$APP".AppImage"
 
 mkdir -p ${OUTPUT_DIR}
 cp ${TMPDIR}/$APP".AppImage" ${OUTPUT_DIR}/$APP".AppImage"

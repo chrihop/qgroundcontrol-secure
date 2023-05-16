@@ -247,6 +247,8 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
         { "--logging",          &logging,               &loggingOptions },
         { "--fake-mobile",      &_fakeMobile,           nullptr },
         { "--log-output",       &_logOutput,            nullptr },
+        { "--encrypt",          &_encryption_mode,      nullptr },
+        { "--no-auto-conn",     &_noAutoConnection,     nullptr },
         // Add additional command line option flags here
     };
 
@@ -366,6 +368,11 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
        connect(gpsManager, &GPSManager::satelliteUpdate,    this, &QGCApplication::_gpsNumSatellites);
    }
 #endif /* __mobile__ */
+
+    if (_encryption_mode == true) {
+        qDebug() << "QGC: encrypt all mavlink message payloads!\n";
+        showAppMessage(tr("QGround Control is in the encryption mode!"));
+    }
 
     _checkForNewVersion();
 }
@@ -588,7 +595,12 @@ bool QGCApplication::_initForNormalAppBoot()
     }
 
     // Connect links with flag AutoconnectLink
-    toolbox()->linkManager()->startAutoConnectedLinks();
+    if (! _noAutoConnection) {
+        qDebug() << "Start to connect to the default target.\n";
+        toolbox()->linkManager()->startAutoConnectedLinks();
+    } else {
+        qDebug() << "Auto Connection is disabled!\n";
+    }
 
     if (getQGCMapEngine()->wasCacheReset()) {
         showAppMessage(tr("The Offline Map Cache database has been upgraded. "

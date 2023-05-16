@@ -25,7 +25,6 @@ RUN apt-get update && apt-get -y --quiet --no-install-recommends install \
 		ca-certificates \
 		ccache \
 		checkinstall \
-		cmake \
 		curl \
 		espeak \
 		fuse \
@@ -50,11 +49,25 @@ RUN apt-get update && apt-get -y --quiet --no-install-recommends install \
 		openssl \
 		patchelf \
 		pkg-config \
+		pgp \
+		python3 \
+		python3-pip \
 		rsync \
 		speech-dispatcher \
 		wget \
 		xvfb \
 		zlib1g-dev \
+		fuse \
+		libfuse-dev \
+		libdirectfb-dev \
+	&& apt-get -y autoremove \
+	&& apt-get clean autoclean \
+	&& rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
+
+RUN	wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
+	&& echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
+	&& apt-get update \
+	&& apt-get install -y cmake \
 	&& apt-get -y autoremove \
 	&& apt-get clean autoclean \
 	&& rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
@@ -62,6 +75,9 @@ RUN apt-get update && apt-get -y --quiet --no-install-recommends install \
 # Install Qt
 COPY deploy/docker/install-qt-linux.sh /tmp/qt/
 RUN /tmp/qt/install-qt-linux.sh
+
+# Install python packages
+RUN /usr/bin/pip3 install jsonschema jinja2 pyyaml ecdsa pyelftools
 
 # Reconfigure locale
 RUN locale-gen en_US.UTF-8 && dpkg-reconfigure locales
@@ -71,4 +87,4 @@ RUN useradd user --create-home --home-dir /home/user --shell /bin/bash --uid 100
 USER user
 
 WORKDIR /project/build
-CMD qmake /project/source && make -j$(nproc)
+CMD cmake /project/source && make -j$(nproc)

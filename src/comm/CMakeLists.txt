@@ -11,6 +11,19 @@ if(BUILD_TESTING)
 	)
 endif()
 
+include(FetchContent)
+
+FetchContent_Declare(
+    attestation
+    GIT_REPOSITORY https://github.com/chrihop/attestation.git
+    GIT_TAG v2
+)
+
+FetchContent_MakeAvailable(attestation)
+
+set (ATTESTATION_INCLUDE_DIR "${attestation_SOURCE_DIR}/inc" CACHE STRING "" FORCE)
+set (MBEDTLS_INCLUDE_DIR     "${attestation_SOURCE_DIR}/backend/mbedtls/include" CACHE STRING "" FORCE)
+
 add_library(comm
 	#BluetoothLink.cc
 	#BluetoothLink.h
@@ -38,6 +51,7 @@ add_library(comm
 	UdpIODevice.h
 	UDPLink.cc
 	UDPLink.h
+	EncryptionChacha20.cc
 
 	${EXTRA_SRC}
 )
@@ -51,6 +65,16 @@ target_link_libraries(comm
 		Qt5::TextToSpeech
 		Qt5::Widgets
 		qmdnsengine
+		crypto_abstract
+		mbedcrypto
 )
 
-target_include_directories(comm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(comm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
+	${ATTESTATION_INCLUDE_DIR}
+	${MBEDTLS_INCLUDE_DIR}
+)
+
+target_compile_definitions(comm
+	PRIVATE
+	POSIX_LIBC
+)

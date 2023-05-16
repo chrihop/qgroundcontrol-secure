@@ -79,6 +79,8 @@ public:
     /// @return true: Fake ui into showing mobile interface
     bool fakeMobile(void) const { return _fakeMobile; }
 
+    bool encryptionMode(void) const {return _encryption_mode; }
+
     // Still working on getting rid of this and using dependency injection instead for everything
     QGCToolbox* toolbox(void) { return _toolbox; }
 
@@ -209,6 +211,8 @@ private:
     QGCToolbox*         _toolbox                = nullptr;
     QQuickWindow*       _mainRootWindow         = nullptr;
     bool                _bluetoothAvailable     = false;
+    bool                _encryption_mode        = false;
+    bool                _noAutoConnection       = false;
     QTranslator         _qgcTranslatorSourceCode;           ///< translations for source code C++/Qml
     QTranslator         _qgcTranslatorJSON;                 ///< translations for json files
     QTranslator         _qgcTranslatorQtLibs;               ///< tranlsations for Qt libraries
