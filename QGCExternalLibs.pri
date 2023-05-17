@@ -336,3 +336,32 @@ contains (DEFINES, DISABLE_AIRMAP) {
             $${AIRMAP_PLATFORM_SDK_PATH}/include
     }
 }
+
+#
+# ThinROS Attestation Support
+#
+THINROS_ATTESTATION_SDK_PATH = "$${PWD}/libs/attestation"
+THINROS_ATTESTATION_SDK_BUILD_PATH = "$${OUT_PWD}/libs/attestation"
+THINROS_ATTESTATION_MBEDTLS_PATH = "$${PWD}/libs/attestation/backend/mbedtls"
+THINROS_ATTESTATION_MBEDTLS_BUILD_PATH = "$${OUT_PWD}/libs/attestation/backend/mbedtls"
+
+message("Build ThinROS Attestation Library")
+
+thinros_attestation_install.commands = \
+    mkdir -p "$${THINROS_ATTESTATION_SDK_BUILD_PATH}" && \
+    cmake -S "$${THINROS_ATTESTATION_SDK_PATH}" -B "$${THINROS_ATTESTATION_SDK_BUILD_PATH}" && \
+    make -C "$${THINROS_ATTESTATION_SDK_BUILD_PATH}" enclave_common
+
+thinros_attestation_install.depends = FORCE
+
+QMAKE_EXTRA_TARGETS += thinros_attestation_install
+PRE_TARGETDEPS += thinros_attestation_install
+
+LIBS += -L$${THINROS_ATTESTATION_SDK_BUILD_PATH}/src -lcrypto_abstract -lenclave_common
+LIBS += -L$${THINROS_ATTESTATION_MBEDTLS_BUILD_PATH}/library -lmbedcrypto
+
+DEFINES += BACKEND_MBEDTLS
+DEFINES += POSIX_LIBC
+
+INCLUDEPATH += "$${THINROS_ATTESTATION_MBEDTLS_PATH}/include"
+INCLUDEPATH += "$${THINROS_ATTESTATION_SDK_PATH}/inc"

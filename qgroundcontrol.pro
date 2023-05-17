@@ -439,7 +439,7 @@ HEADERS += \
     src/api/QGCOptions.h \
     src/api/QGCSettings.h \
     src/api/QmlComponentInfo.h \
-    src/GPS/Drivers/src/base_station.h \
+    src/GPS/Drivers/src/base_station.h
 
 contains (DEFINES, QGC_ENABLE_PAIRING) {
     HEADERS += \
@@ -1024,6 +1024,12 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
     SOURCES += \
         src/PairingManager/PairingManager.cc \
 }
+
+#
+# Encryption Support
+#
+HEADERS += src/comm/EncryptionChacha20.h
+SOURCES += src/comm/EncryptionChacha20.cc
 
 DebugBuild {
 SOURCES += \
