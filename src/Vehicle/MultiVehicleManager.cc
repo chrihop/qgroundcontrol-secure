@@ -18,6 +18,7 @@
 #include "QGCCorePlugin.h"
 #include "QGCOptions.h"
 #include "LinkManager.h"
+#include "comm/EncryptionChacha20.h"
 
 #if defined (__ios__) || defined(__android__)
 #include "MobileScreenMgr.h"
@@ -391,6 +392,10 @@ void MultiVehicleManager::_sendGCSHeartbeat(void)
                                             MAV_MODE_MANUAL_ARMED,   // MAV_MODE
                                             0,                       // custom mode
                                             MAV_STATE_ACTIVE);       // MAV_STATE
+
+            if (qgcApp()->encryptionMode()) {
+                stream_cipher_encode_threadsafe((uint8_t *) message.payload64, message.len);
+            }
 
             uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
             int len = mavlink_msg_to_send_buffer(buffer, &message);

@@ -51,6 +51,9 @@
 #include "VehicleBatteryFactGroup.h"
 #include "EventHandler.h"
 #include "Actuators/Actuators.h"
+
+#include "comm/EncryptionChacha20.h"
+
 #ifdef QT_DEBUG
 #include "MockLink.h"
 #endif
@@ -1887,6 +1890,11 @@ bool Vehicle::sendMessageOnLinkThreadSafe(LinkInterface* link, mavlink_message_t
     _firmwarePlugin->adjustOutgoingMavlinkMessageThreadSafe(this, link, &message);
 
     // Write message into buffer, prepending start sign
+
+    if (qgcApp()->encryptionMode()) {
+        stream_cipher_encode_threadsafe((uint8_t *) message.payload64, message.len);
+    }
+
     uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
     int len = mavlink_msg_to_send_buffer(buffer, &message);
 
