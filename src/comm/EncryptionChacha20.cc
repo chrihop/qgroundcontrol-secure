@@ -56,3 +56,12 @@ void stream_cipher_encode_threadsafe(unsigned char * bytes, unsigned long len)
     struct stream_cipher_t * ctx = stream_cipher_context.localData();
     stream_cipher_encode(ctx, bytes, len);
 }
+
+void
+stream_cipher_update_message(mavlink_message_t * msg)
+{
+    uint8_t crc_extra = mavlink_get_crc_extra(msg);
+    size_t min_length = mavlink_min_message_length(msg);
+    mavlink_finalize_message_chan(msg, msg->sysid, msg->compid, MAVLINK_COMM_3,
+        min_length, msg->len, crc_extra);
+}

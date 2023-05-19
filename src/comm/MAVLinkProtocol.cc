@@ -273,10 +273,6 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 SharedLinkInterfacePtr forwardingLink = _linkMgr->mavlinkForwardingLink();
 
                 if (forwardingLink) {
-                    if (qgcApp()->encryptionMode()) {
-                       stream_cipher_encode_threadsafe((uint8_t *) _message.payload64, _message.len);
-                    }
-
                     uint8_t buf[MAVLINK_MAX_PACKET_LEN];
                     int len = mavlink_msg_to_send_buffer(buf, &_message);
                     forwardingLink->writeBytesThreadSafe((const char*)buf, len);

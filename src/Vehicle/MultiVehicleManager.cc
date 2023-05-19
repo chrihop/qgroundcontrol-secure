@@ -395,6 +395,7 @@ void MultiVehicleManager::_sendGCSHeartbeat(void)
 
             if (qgcApp()->encryptionMode()) {
                 stream_cipher_encode_threadsafe((uint8_t *) message.payload64, message.len);
+                stream_cipher_update_message(&message);
             }
 
             uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
